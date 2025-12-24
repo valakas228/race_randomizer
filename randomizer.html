@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Рандомайзер рас</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f6f8;
+        padding: 30px;
+    }
+
+    h1 { text-align: center; }
+
+    .container {
+        max-width: 700px;
+        margin: auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .race {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        padding: 10px;
+        background: #eef1f5;
+        border-radius: 6px;
+    }
+
+    .race input {
+        flex: 1;
+        padding: 6px;
+    }
+
+    .race button {
+        background: #ff4d4d;
+        border: none;
+        color: white;
+        padding: 6px 10px;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+
+    .controls {
+        display: flex;
+        gap: 10px;
+        margin: 15px 0;
+    }
+
+    .controls input {
+        flex: 1;
+        padding: 8px;
+    }
+
+    button.main {
+        width: 100%;
+        padding: 12px;
+        background: #4a90e2;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    button.add {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 15px;
+        background: #6bbf59;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .result {
+        margin-top: 20px;
+        background: #eef1f5;
+        padding: 15px;
+        border-radius: 6px;
+        white-space: pre-line;
+        font-weight: bold;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>Рандомайзер рас</h1>
+
+<div class="container">
+
+    <div id="races"></div>
+
+    <button class="add" onclick="addRace()">➕ Добавить расу</button>
+
+    <div class="controls">
+        <input type="number" id="players" placeholder="Количество рас">
+        <input type="number" id="points" placeholder="Макс. очков">
+    </div>
+
+    <button class="main" onclick="generate()">🎲 Сгенерировать</button>
+
+    <div class="result" id="result"></div>
+
+</div>
+
+<script>
+const STORAGE_KEY = "race_randomizer_data";
+
+function saveData() {
+    const races = [];
+    document.querySelectorAll(".race").forEach(div => {
+        const inputs = div.querySelectorAll("input");
+        races.push({
+            name: inputs[0].value,
+            cost: inputs[1].value
+        });
+    });
+
+    const data = {
+        races,
+        players: document.getElementById("players").value,
+        points: document.getElementById("points").value
+    };
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function loadData() {
+    const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (!data) return;
+
+    document.getElementById("races").innerHTML = "";
+    data.races.forEach(r => addRace(r.name, r.cost));
+
+    document.getElementById("players").value = data.players;
+    document.getElementById("points").value = data.points;
+}
+
+function addRace(name = "", cost = "") {
+    const div = document.createElement("div");
+    div.className = "race";
+
+    div.innerHTML = `
+        <input placeholder="Название расы" value="${name}" oninput="saveData()">
+        <input type="number" placeholder="Очки" value="${cost}" oninput="saveData()">
+        <button onclick="this.parentElement.remove(); saveData()">✖</button>
+    `;
+
+    document.getElementById("races").appendChild(div);
+    saveData();
+}
+
+function generate() {
+    saveData();
+
+    const raceDivs = document.querySelectorAll(".race");
+    const players = parseInt(document.getElementById("players").value);
+    const target = parseInt(document.getElementById("points").value);
+    const result = document.getElementById("result");
+
+    let races = [];
+
+    raceDivs.forEach(div => {
+        const inputs = div.querySelectorAll("input");
+        const name = inputs[0].value.trim();
+        const cost = parseInt(inputs[1].value);
+        if (name && !isNaN(cost)) {
+            races.push({name, cost});
+        }
+    });
+
+    function combinations(arr, k, start = 0, prev = []) {
+        let res = [];
+        if (prev.length === k) return [prev];
+        for (let i = start; i < arr.length; i++) {
+            res = res.concat(combinations(arr, k, i + 1, prev.concat(arr[i])));
+        }
+        return res;
+    }
+
+    const valid = combinations(races, players).filter(c =>
+        c.reduce((s, r) => s + r.cost, 0) === target
+    );
+
+    if (valid.length === 0) {
+        result.textContent = "Нет подходящих комбинаций";
+        return;
+    }
+
+    const chosen = valid[Math.floor(Math.random() * valid.length)];
+
+    let text = "Выпала комбинация:\n\n";
+    let sum = 0;
+    chosen.forEach(r => {
+        text += `• ${r.name} — ${r.cost} очков\n`;
+        sum += r.cost;
+    });
+    text += `\nИтого: ${sum} очков`;
+
+    result.textContent = text;
+}
+
+window.onload = () => {
+    loadData();
+    if (document.querySelectorAll(".race").length === 0) {
+    }
+};
+</script>
+
+</body>
+</html>
