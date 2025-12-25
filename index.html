@@ -157,8 +157,8 @@ function addRace(name = "", cost = "") {
     div.className = "race";
 
     div.innerHTML = `
-        <input placeholder="Название расы" value="${name}" oninput="saveData()">
-        <input type="number" placeholder="Очки" value="${cost}" oninput="saveData()">
+        <input placeholder="Race" value="${name}" oninput="saveData()">
+        <input type="number" placeholder="Cost" value="${cost}" oninput="saveData()">
         <button onclick="this.parentElement.remove(); saveData()">✖</button>
     `;
 
@@ -270,6 +270,7 @@ function loadPreset() {
 
 </body>
 </html>
+
 
 
 
