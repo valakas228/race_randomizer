@@ -100,21 +100,20 @@
 
 <body>
 
-<h1>Рандомайзер рас</h1>
 
 <div class="container">
 
     <div id="races"></div>
 
-    <button class="add" onclick="addRace()">➕ Добавить расу</button>
+    <button class="add" onclick="addRace()">➕ Add race</button>
 <button class="main" onclick="loadPreset()">3x3 Unification random</button>
 
     <div class="controls">
-        <input type="number" id="players" placeholder="Количество рас(игроков)">
-        <input type="number" id="points" placeholder="Макс. очков">
+        <input type="number" id="players" placeholder="Number of races (players))">
+        <input type="number" id="points" placeholder="Max cost">
     </div>
 
-    <button class="main" onclick="generate()">🎲 Сгенерировать</button>
+    <button class="main" onclick="generate()">🎲 Random</button>
 
     <div class="result" id="result"></div>
 
@@ -200,19 +199,19 @@ function generate() {
     );
 
     if (valid.length === 0) {
-        result.textContent = "Нет подходящих комбинаций";
+        result.textContent = "There are no suitable combinations";
         return;
     }
 
     const chosen = valid[Math.floor(Math.random() * valid.length)];
 
-    let text = "Выпала комбинация:\n\n";
+    let text = "Result:\n\n";
     let sum = 0;
     chosen.forEach(r => {
-        text += `• ${r.name} — ${r.cost} очков\n`;
+        text += `• ${r.name} — ${r.cost} cost\n`;
         sum += r.cost;
     });
-    text += `\nИтого: ${sum} очков`;
+    text += `\nИтого: ${sum} cost`;
 
     result.textContent = text;
 }
@@ -271,6 +270,7 @@ function loadPreset() {
 
 </body>
 </html>
+
 
 
 
