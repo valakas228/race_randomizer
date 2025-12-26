@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Race randomizer</title>
 
 <style>
@@ -38,6 +39,7 @@
         padding: 10px;
         background: #6d6c68;
         border-radius: 6px;
+        flex-wrap: wrap;
     }
 
     .race input {
@@ -135,10 +137,10 @@
         <input type="number" id="players" placeholder="Number of races (players)">
         <input type="number" id="points" placeholder="Max cost">
            <label style="color:white;">
-        Количество результатов:
+        
         <span id="resultCountValue">1</span>
     </label>
-    <input type="range" id="resultCount" min="1" max="10" value="1">
+    <input type="range" id="resultCount" min="1" max="10" value="1" style="padding: 0;">
     </div>
 
     <button class="main" onclick="generate()">🎲 Random</button>
