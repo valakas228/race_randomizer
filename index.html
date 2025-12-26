@@ -185,6 +185,21 @@ function generate() {
         }
     });
 
+    if (isNaN(players) || players <= 0) {
+    result.textContent = "";
+    return;
+}
+
+if (isNaN(target) || target <= 0) {
+    result.textContent = "";
+    return;
+}
+
+if (players > races.length) {
+    result.textContent = "";
+    return;
+}
+
     function combinations(arr, k, start = 0, prev = []) {
         let res = [];
         if (prev.length === k) return [prev];
@@ -270,6 +285,7 @@ function loadPreset() {
 
 </body>
 </html>
+
 
 
 
