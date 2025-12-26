@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Рандомайзер рас</title>
+<title>Race randomizer</title>
 
 <style>
     body {
@@ -94,7 +94,30 @@
         border-radius: 6px;
         white-space: pre-line;
         font-weight: bold;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
     }
+    .result-block {
+    background: #f0f0f0;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.result-block h3 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+}
+
+.result-block ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.result-block ul li {
+    margin-bottom: 4px;
+}
 </style>
 </head>
 
@@ -111,6 +134,11 @@
     <div class="controls">
         <input type="number" id="players" placeholder="Number of races (players)">
         <input type="number" id="points" placeholder="Max cost">
+           <label style="color:white;">
+        Количество результатов:
+        <span id="resultCountValue">1</span>
+    </label>
+    <input type="range" id="resultCount" min="1" max="10" value="1">
     </div>
 
     <button class="main" onclick="generate()">🎲 Random</button>
@@ -121,6 +149,14 @@
 
 <script>
 const STORAGE_KEY = "race_randomizer_data";
+
+const slider = document.getElementById("resultCount");
+const sliderValue = document.getElementById("resultCountValue");
+
+slider.addEventListener("input", () => {
+    sliderValue.textContent = slider.value;
+    saveData();
+});
 
 function saveData() {
     const races = [];
@@ -138,19 +174,31 @@ function saveData() {
         points: document.getElementById("points").value
     };
 
+    resultCount: slider.value
+    
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
 function loadData() {
     const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (!data) return;
+    
+    if (data && data.races) {
+        data.races.forEach(r => addRace(r.name, r.cost));
+    }
+    document.getElementById("players").value = data?.players || "";
+    document.getElementById("points").value = data?.points || "";
 
-    document.getElementById("races").innerHTML = "";
-    data.races.forEach(r => addRace(r.name, r.cost));
-
-    document.getElementById("players").value = data.players;
-    document.getElementById("points").value = data.points;
+    const slider = document.getElementById("resultCount");
+    const sliderValue = document.getElementById("resultCountValue");
+    
+    if (data && data.resultCount) {
+        slider.value = data.resultCount;
+    } else {
+        slider.value = 1; 
+    }
+    sliderValue.textContent = slider.value;
 }
+
 
 function addRace(name = "", cost = "") {
     const div = document.createElement("div");
@@ -173,7 +221,6 @@ function generate() {
     const players = parseInt(document.getElementById("players").value);
     const target = parseInt(document.getElementById("points").value);
     const result = document.getElementById("result");
-
     let races = [];
 
     raceDivs.forEach(div => {
@@ -185,20 +232,10 @@ function generate() {
         }
     });
 
-    if (isNaN(players) || players <= 0) {
-    result.textContent = "";
-    return;
-}
-
-if (isNaN(target) || target <= 0) {
-    result.textContent = "";
-    return;
-}
-
-if (players > races.length) {
-    result.textContent = "";
-    return;
-}
+    if (isNaN(players) || players <= 0 || isNaN(target) || target <= 0 || players > races.length) {
+        result.innerHTML = "";
+        return;
+    }
 
     function combinations(arr, k, start = 0, prev = []) {
         let res = [];
@@ -214,22 +251,46 @@ if (players > races.length) {
     );
 
     if (valid.length === 0) {
-        result.textContent = "There are no suitable combinations";
+        result.innerHTML = "There are no suitable combinations";
         return;
     }
 
-    const chosen = valid[Math.floor(Math.random() * valid.length)];
+    const count = parseInt(document.getElementById("resultCount").value);
+    valid.sort(() => Math.random() - 0.5);
+    const selected = valid.slice(0, Math.min(count, valid.length));
 
-    let text = "Result:\n\n";
-    let sum = 0;
-    chosen.forEach(r => {
-        text += `• ${r.name} — ${r.cost} cost\n`;
-        sum += r.cost;
+   
+    result.innerHTML = ""; 
+
+    selected.forEach((combo, index) => {
+        const block = document.createElement("div");
+        block.className = "result-block";
+
+        const title = document.createElement("h3");
+        title.textContent = `Result ${index + 1}`;
+        block.appendChild(title);
+
+        const list = document.createElement("ul");
+        let sum = 0;
+
+        combo.forEach(r => {
+            const li = document.createElement("li");
+            li.textContent = `${r.name} — ${r.cost} cost`;
+            list.appendChild(li);
+            sum += r.cost;
+        });
+
+        block.appendChild(list);
+
+        const total = document.createElement("p");
+        total.textContent = `Total: ${sum} cost`;
+        total.style.fontWeight = "bold";
+        block.appendChild(total);
+
+        result.appendChild(block);
     });
-    text += `\nTotal: ${sum} cost`;
-
-    result.textContent = text;
 }
+
 
 window.onload = () => {
     loadData();
